@@ -124,7 +124,10 @@ export const relations = defineRelations(schema, (r) => ({
 
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
-
+export type LoginUser = {
+  email: string, 
+  password: string
+}
 export type Habit = typeof habits.$inferSelect
 export type NewHabit = typeof habits.$inferInsert
 
