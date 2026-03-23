@@ -26,7 +26,7 @@ export const users = pgTable("users", {
 
 export const habits = pgTable("habits", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   frequency: varchar("frequency", { length: 20 }).notNull(),
@@ -40,7 +40,7 @@ export const entries = pgTable("entries", {
   id: uuid("id").primaryKey().defaultRandom(),
   habitId: uuid("habit_id").references(() => habits.id, {
     onDelete: "cascade",
-  }),
+  }).notNull(),
   completionDate: timestamp("completion_date").defaultNow().notNull(),
   note: text("note"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -122,10 +122,24 @@ export const relations = defineRelations(schema, (r) => ({
   },
 }));
 
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
 
+export type Habit = typeof habits.$inferSelect
+export type NewHabit = typeof habits.$inferInsert
+
+export type Entry = typeof entries.$inferSelect
+export type NewEntry = typeof entries.$inferInsert
+
+export type Tag = typeof tags.$inferSelect
+export type NewTag = typeof tags.$inferInsert
+
+export type HabitTag = typeof habitTags.$inferSelect
+export type NewHabitTag = typeof habitTags.$inferInsert
 
 
 // drizzle-zod validations
+
 
 export const insertUserSchema = createInsertSchema(users)
 export const selectUserSchema = createSelectSchema(users)
