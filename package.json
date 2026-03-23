@@ -16,6 +16,8 @@
   "dependencies": {
     "cors": "^2.8.6",
     "custom-env": "^2.0.6",
+    "drizzle-orm": "1.0.0-beta.18-7eb39f0",
+    "drizzle-zod": "^0.8.3",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
