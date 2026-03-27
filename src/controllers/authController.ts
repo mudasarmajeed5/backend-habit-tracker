@@ -32,11 +32,20 @@ export const register = async (
       id: user.id,
       username: user.username,
     });
-    return res.status(201).json({
-      message: "User created",
-      user,
-      token,
-    });
+
+    // do it with cookies.
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .status(201)
+      .json({
+        message: "User created",
+        user,
+      });
   } catch (e) {
     // at this point the only error that is caused, is because of us so we send 500.
     res.status(500).json({ error: "Failed to create user." });
@@ -65,17 +74,27 @@ export const login = async (
       username: user.username,
       email: user.email,
     });
-    return res.status(200).json({
-      message: "Login successfull",
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
-      token,
-    });
+  
+
+    return res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .status(200)
+      .json({
+        message: "Login successful",
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+      });
+
   } catch (e) {
     return res.status(500).json({ error: "Failed to login" });
   }

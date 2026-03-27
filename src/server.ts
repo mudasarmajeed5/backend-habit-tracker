@@ -6,7 +6,13 @@ import authRoutes from "./routes/authRoutes.ts";
 import { isTest } from "../env.ts";
 const app = express();
 app.use(helmet());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true, 
+  }),
+);
 app.use(express.json());
 app.use(
   morgan("dev", {
@@ -18,7 +24,7 @@ app.get("/health", (_req, res) => {
     status: "up",
   });
 });
-
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 
 export { app };

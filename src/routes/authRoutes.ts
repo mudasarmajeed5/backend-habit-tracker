@@ -11,6 +11,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+
 router.post("/register", validateBody(insertUserSchema), register);
 
 router.post("/login", validateBody(loginSchema), login);
