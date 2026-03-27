@@ -71,9 +71,9 @@ export const habitTags = pgTable("habitTags",
 
 );
 
-const schema = { habits, entries, tags, habitTags, users };
+export const tablesSchema = { habits, entries, tags, habitTags, users };
 
-export const relations = defineRelations(schema, (r) => ({
+export const relations = defineRelations(tablesSchema, (r) => ({
   // users -> habits (one-to-many)
   users: {
     habits: r.many.habits({

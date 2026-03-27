@@ -1,12 +1,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import { verifyToken, type JWTPayload } from '../utils/jwt.ts'
 
-export interface AuthenticatedRequest extends Request {
-  user?: JWTPayload
-}
-
 export const authenticatedToken = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
