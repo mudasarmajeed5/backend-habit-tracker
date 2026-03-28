@@ -3,11 +3,13 @@ import type { Response, Request } from "express";
 import db from "../db/connection.ts";
 
 import { habits, habitTags, type NewHabit } from "../db/schema.ts";
-import { eq, and, desc } from "drizzle-orm";
-import type { AuthenticatedRequest } from "../../types/auth.ts";
+import { eq, and } from "drizzle-orm";
+import {
+  getAuthenticatedUser,
+} from "../utils/authentication.ts";
 
 export const createHabit = async (
-  req: AuthenticatedRequest<NewHabit & { tagIds: string[] }>,
+  req: Request<any, any, NewHabit & { tagIds: string[] }>,
   res: Response,
 ) => {
   try {
@@ -42,10 +44,7 @@ export const createHabit = async (
   }
 };
 
-export const getUserHabits = async (
-  req: AuthenticatedRequest,
-  res: Response,
-) => {
+export const getUserHabits = async (req: Request, res: Response) => {
   try {
     const habitsWithTags = await db.query.habits.findMany({
       with: {
@@ -60,11 +59,12 @@ export const getUserHabits = async (
   }
 };
 
-export const updatedHabit = async (
-  req: AuthenticatedRequest<NewHabit & { tagIds: string[] }>,
+export const updateHabit = async (
+  req: Request<any, any, NewHabit & { tagIds: string[] }>,
   res: Response,
 ) => {
   try {
+    const user = getAuthenticatedUser(req);
     const id = req.params.id;
     const { tagIds, ...updates } = req.body;
     const result = await db.transaction(async (tx) => {
@@ -74,7 +74,7 @@ export const updatedHabit = async (
           ...updates,
           updatedAt: new Date(),
         })
-        .where(and(eq(habits.id, id), eq(habits.userId, req.user.id)))
+        .where(and(eq(habits.id, id), eq(habits.userId, user.id)))
         .returning();
       if (!updatedHabit) return null;
 
@@ -102,5 +102,45 @@ export const updatedHabit = async (
   } catch (error) {
     console.error("Update habit error", error);
     return res.status(500).json({ error: "Failed to update Habit" });
+  }
+};
+
+export const getHabitById = async (req: Request, res: Response) => {
+  try {
+    const user = getAuthenticatedUser(req);
+    
+    const reqHabitId = req.params.id as string;
+    const userId = user.id;
+    const [userHabit] = await db
+      .select()
+      .from(habits)
+      .where(and(eq(habits.id, reqHabitId), eq(habits.userId, userId)));
+    if (!userHabit) {
+      return res.status(404).json({ error: "Habit not found" });
+    }
+    return res.json({ habit: userHabit });
+  } catch (error) {
+    console.error("Error getting habit", error);
+    return res.status(500).json({ error: "Failed to Get Habit" });
+  }
+};
+export const deleteHabitById = async (req: Request, res: Response) => {
+  try {
+    const user = getAuthenticatedUser(req);
+    const habitId = req.params.id as string;
+    const [deletedHabit] = await db
+      .delete(habits)
+      .where(and(eq(habits.id, habitId), eq(habits.userId, user.id)))
+      .returning();
+    if (!deletedHabit) {
+      return res.status(404).json({ error: "Habit not found" });
+    }
+    return res.json({
+      message: "Habit Deleted successfully",
+      deletedId: deletedHabit.id,
+    });
+  } catch (error) {
+    console.error("Error deleting habit", error);
+    return res.status(500).json({ error: "Failed to delete Habit" });
   }
 };

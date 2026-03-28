@@ -45,6 +45,7 @@ export const register = async (
       .json({
         message: "User created",
         user,
+        token
       });
   } catch (e) {
     // at this point the only error that is caused, is because of us so we send 500.
@@ -93,6 +94,7 @@ export const login = async (
           firstName: user.firstName,
           lastName: user.lastName,
         },
+        token
       });
 
   } catch (e) {

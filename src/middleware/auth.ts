@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from 'express'
-import { verifyToken, type JWTPayload } from '../utils/jwt.ts'
+import type { Request, Response, NextFunction } from "express";
+import { verifyToken, type JWTPayload } from "../utils/jwt.ts";
 
 export const authenticatedToken = async (
   req: Request,
@@ -7,17 +7,17 @@ export const authenticatedToken = async (
   next: NextFunction,
 ) => {
   try {
-    const authHeader = req.headers['authorization']
+    const authHeader = req.headers["authorization"];
     // get the token
-    const token = authHeader && authHeader.split(' ')[1]
+    const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
-      return res.status(401).json({ error: 'Bad Request' })
+      return res.status(401).json({ error: "Bad Request / Unauthorized" });
     }
 
-    const payload = await verifyToken(token)
-    req.user = payload
-    next()
+    const payload = await verifyToken(token);
+    req.user = payload;
+    next();
   } catch (error) {
-    return res.status(403).json({ error: 'Forbidden' })
+    return res.status(403).json({ error: "Forbidden" });
   }
-}
+};
