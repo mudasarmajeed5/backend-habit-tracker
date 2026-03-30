@@ -6,7 +6,7 @@ import {
   timestamp,
   boolean,
   integer,
-  uniqueIndex,
+  unique,
 } from "drizzle-orm/pg-core";
 import { defineRelations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -26,7 +26,9 @@ export const users = pgTable("users", {
 
 export const habits = pgTable("habits", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   frequency: varchar("frequency", { length: 20 }).notNull(),
@@ -38,9 +40,11 @@ export const habits = pgTable("habits", {
 
 export const entries = pgTable("entries", {
   id: uuid("id").primaryKey().defaultRandom(),
-  habitId: uuid("habit_id").references(() => habits.id, {
-    onDelete: "cascade",
-  }).notNull(),
+  habitId: uuid("habit_id")
+    .references(() => habits.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
   completionDate: timestamp("completion_date").defaultNow().notNull(),
   note: text("note"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -54,21 +58,19 @@ export const tags = pgTable("tags", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const habitTags = pgTable("habitTags", 
+export const habitTags = pgTable(
+  "habitTags",
   {
-  id: uuid("id").defaultRandom().primaryKey(),
-  habitId: uuid("habit_id")
-    .references(() => habits.id, { onDelete: "cascade" })
-    .notNull(),
-  tagId: uuid("tag_id")
-    .references(() => tags.id, { onDelete: "cascade" })
-    .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  }, 
-  (table) =>({
-    uniqueHabitTag: uniqueIndex("habit_tag_unique").on(table.habitId, table.tagId)
-  })
-
+    id: uuid("id").defaultRandom().primaryKey(),
+    habitId: uuid("habit_id")
+      .references(() => habits.id, { onDelete: "cascade" })
+      .notNull(),
+    tagId: uuid("tag_id")
+      .references(() => tags.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [unique().on(table.habitId, table.tagId)],
 );
 
 export const tablesSchema = { habits, entries, tags, habitTags, users };
@@ -102,7 +104,7 @@ export const relations = defineRelations(tablesSchema, (r) => ({
       to: r.habits.id,
     }),
   },
-  
+
   tags: {
     habits: r.many.habits({
       from: r.tags.id.through(r.habitTags.tagId),
@@ -122,39 +124,37 @@ export const relations = defineRelations(tablesSchema, (r) => ({
   },
 }));
 
-export type User = typeof users.$inferSelect
-export type NewUser = typeof users.$inferInsert
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 export type LoginUser = {
-  email: string, 
-  password: string
-}
-export type Habit = typeof habits.$inferSelect
-export type NewHabit = typeof habits.$inferInsert
+  email: string;
+  password: string;
+};
+export type Habit = typeof habits.$inferSelect;
+export type NewHabit = typeof habits.$inferInsert;
 
-export type Entry = typeof entries.$inferSelect
-export type NewEntry = typeof entries.$inferInsert
+export type Entry = typeof entries.$inferSelect;
+export type NewEntry = typeof entries.$inferInsert;
 
-export type Tag = typeof tags.$inferSelect
-export type NewTag = typeof tags.$inferInsert
+export type Tag = typeof tags.$inferSelect;
+export type NewTag = typeof tags.$inferInsert;
 
-export type HabitTag = typeof habitTags.$inferSelect
-export type NewHabitTag = typeof habitTags.$inferInsert
-
+export type HabitTag = typeof habitTags.$inferSelect;
+export type NewHabitTag = typeof habitTags.$inferInsert;
 
 // drizzle-zod validations
 
+export const insertUserSchema = createInsertSchema(users);
+export const selectUserSchema = createSelectSchema(users);
 
-export const insertUserSchema = createInsertSchema(users)
-export const selectUserSchema = createSelectSchema(users)
+export const insertHabitSchema = createInsertSchema(habits);
+export const selectHabitSchema = createSelectSchema(habits);
 
-export const insertHabitSchema = createInsertSchema(habits)
-export const selectHabitSchema = createSelectSchema(habits)
+export const insertEntrySchema = createInsertSchema(entries);
+export const selectEntrySchema = createSelectSchema(entries);
 
-export const insertEntrySchema = createInsertSchema(entries)
-export const selectEntrySchema = createSelectSchema(entries)
+export const insertTagSchema = createInsertSchema(tags);
+export const selectTagSchema = createSelectSchema(tags);
 
-export const insertTagSchema = createInsertSchema(tags)
-export const selectTagSchema = createSelectSchema(tags)
-
-export const insertHabitTagSchema = createInsertSchema(habitTags)
-export const selectHabitTagSchema = createSelectSchema(habitTags)
+export const insertHabitTagSchema = createInsertSchema(habitTags);
+export const selectHabitTagSchema = createSelectSchema(habitTags);
