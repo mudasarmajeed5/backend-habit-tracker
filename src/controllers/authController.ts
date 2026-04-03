@@ -43,13 +43,14 @@ export const register = async (
       })
       .status(201)
       .json({
+        success: true,
         message: "User created",
         user,
-        token
+        token,
       });
   } catch (e) {
     // at this point the only error that is caused, is because of us so we send 500.
-    res.status(500).json({ error: "Failed to create user." });
+    res.status(500).json({ success: false, error: "Failed to create user." });
   }
 };
 export const login = async (
@@ -75,17 +76,17 @@ export const login = async (
       username: user.username,
       email: user.email,
     });
-  
 
     return res
       .cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 daysz
       })
       .status(200)
       .json({
+        success: true,
         message: "Login successful",
         user: {
           id: user.id,
@@ -94,10 +95,9 @@ export const login = async (
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        token
+        token,
       });
-
   } catch (e) {
-    return res.status(500).json({ error: "Failed to login" });
+    return res.status(500).json({ success: false, error: "Failed to login" });
   }
 };
