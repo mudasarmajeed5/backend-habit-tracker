@@ -5,7 +5,9 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.ts";
 import habitRoutes from "./routes/habitRoutes.ts";
 import userRoutes from "./routes/userRoutes.ts";
+import tagRoutes from "./routes/tagRoutes.ts";
 import { isTest } from "../env.ts";
+import { errorHandler,notFound } from "./middleware/errorHandler.ts";
 const app = express();
 app.use(helmet());
 
@@ -30,5 +32,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/habits", habitRoutes);
 app.use("/api/user", userRoutes);
+app.use('/api/tags', tagRoutes)
+
+app.use(notFound)
+app.use(errorHandler)
+
 export { app };
 export default app;
