@@ -50,13 +50,18 @@ export const entries = pgTable("entries", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const tags = pgTable("tags", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 50 }).notNull().unique(),
-  color: varchar("color", { length: 7 }).default("#6b7280"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+    name: varchar("name", { length: 50 }).notNull(),
+    color: varchar("color", { length: 7 }).default("#6b7280"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [unique().on(table.userId, table.name)],
+)
 
 export const habitTags = pgTable(
   "habitTags",
@@ -82,6 +87,10 @@ export const relations = defineRelations(tablesSchema, (r) => ({
       from: r.users.id,
       to: r.habits.userId,
     }),
+    tags: r.many.tags({
+      from: r.users.id, 
+      to: r.tags.userId,
+    })
   },
   // habits -> user (many-to-one)
   habits: {
@@ -106,6 +115,10 @@ export const relations = defineRelations(tablesSchema, (r) => ({
   },
 
   tags: {
+    users: r.one.users({
+      from: r.tags.userId, 
+      to: r.users.id
+    }),
     habits: r.many.habits({
       from: r.tags.id.through(r.habitTags.tagId),
       to: r.habits.id.through(r.habitTags.habitId),
